@@ -9,3 +9,15 @@ __pycache__/
 .env
 logs/
 *.sqlite3
+# secrets & env
+.env
+.env.local
+*.env
+# logs & cache
+*.log
+logs/
+__pycache__/
+*.pyc
+*.tmp
+*.bak
+*.swp
