@@ -1,6 +1,14 @@
 [
   {
     "date": "2025-08-15",
+    "title": "自動pushの安定化テスト",
+    "project": "Git連携",
+    "tags": "#自動化,#Git",
+    "tldr": "push失敗時に--no-verifyで一度だけ自動リトライ",
+    "filename": "2025-08-15_自動pushの安定化テスト.md"
+  },
+  {
+    "date": "2025-08-15",
     "title": "秘密情報流出防止ルール導入",
     "project": "セキュリティ運用",
     "tags": "#セキュリティ,#GitHub,#ルール",
