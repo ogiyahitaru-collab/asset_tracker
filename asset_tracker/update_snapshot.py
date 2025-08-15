@@ -1,168 +1,118 @@
-import os, sys, json, re
+#!/usr/bin/env python3
+import sys, os, json, traceback
+from datetime import datetime
+from git_tools import autopush
 
 SAVE_DIR = "/volume1/docker/_shared_master_data/conversation_snapshots"
 INDEX_FILE = os.path.join(SAVE_DIR, "_snapshots_index.json")
+ERROR_LOG_FILE = os.path.join(SAVE_DIR, "_snapshots_error.log")
 
-HEADERS = {
-    "project": "## 関連プロジェクト",
+# 使い方: python3 update_snapshot.py 2025-08-15 field value...
+# field: title|project|tags|tldr|achievement|trigger|summary
+if len(sys.argv) < 4:
+    print("❌ 引数不足: python3 update_snapshot.py YYYY-MM-DD field value")
+    sys.exit(1)
+
+date_str, field = sys.argv[1:3]
+value = " ".join(sys.argv[3:])
+md_target = None
+
+# 対象Markdown探索
+for f in os.listdir(SAVE_DIR):
+    if f.startswith(date_str+"_") and f.endswith(".md"):
+        md_target = os.path.join(SAVE_DIR, f)
+        break
+
+if not md_target:
+    print(f"❌ 該当Markdownが見つかりません: {date_str}_*.md")
+    sys.exit(1)
+
+# Markdownの読み込み・書換
+with open(md_target, "r", encoding="utf-8") as f:
+    lines = f.readlines()
+
+def replace_block(lines, header, newtext):
+    out, i = [], 0
+    found = False
+    while i < len(lines):
+        line = lines[i]
+        if line.strip() == header:
+            found = True
+            out.append(line)
+            i += 1
+            # 空行 or 次のヘッダまで置換
+            while i < len(lines) and not lines[i].startswith("## "):
+                i += 1
+            out.append(newtext + "\n\n")
+        else:
+            out.append(line)
+            i += 1
+    if not found:
+        out.append(header + "\n")
+        out.append(newtext + "\n\n")
+    return out
+
+mapping = {
+    "project": "## プロジェクト",
     "tags": "## タグ",
-    "tldr": "## 要約",
+    "tldr": "## TL;DR",
     "achievement": "## 成果",
-    "trigger": "## 起点となった課題",
-    "summary": "## 会話要約全文",
-    "structure": "## 成果構造",
-    "reuse": "## 再利用ポイント",
+    "trigger": "## 起点",
+    "summary": "## 本文",
+    "title": "#"
 }
 
-INDEX_FIELDS = {"title", "project", "tags", "tldr"}  # indexに持たせるキー
-
-def sanitize_filename(title: str) -> str:
-    return re.sub(r'[\\/*?:"<>|]', "_", title)
-
-def load_index():
-    if not os.path.exists(INDEX_FILE):
-        return []
-    with open(INDEX_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def save_index(data):
-    with open(INDEX_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def find_entry(index, date_str):
-    # date一致の先頭を返す（同日に複数ある場合は最初の1件）
-    for i, e in enumerate(index):
-        if e.get("date") == date_str:
-            return i, e
-    return None, None
-
-def read_lines(path):
-    with open(path, "r", encoding="utf-8") as f:
-        return f.readlines()
-
-def write_lines(path, lines):
-    with open(path, "w", encoding="utf-8") as f:
-        f.writelines(lines)
-
-def replace_title(lines, new_title):
-    # 先頭の見出し "# " を差し替え
-    for i, line in enumerate(lines):
-        if line.startswith("# "):
-            lines[i] = f"# {new_title}\n"
-            return True
-    return False
-
-def replace_section_single_line(lines, header, new_value):
-    # 見出しの「次の1行」を置換（project/tags/tldr/achievement/trigger など）
-    for i, line in enumerate(lines):
-        if line.strip() == header:
-            # 次の行が本文
-            if i + 1 < len(lines):
-                lines[i + 1] = f"{new_value}\n"
-            else:
-                lines.append(f"{new_value}\n")
-            return True
-    return False
-
-def replace_section_block(lines, header, new_block):
-    # headerの次行から「次の '## ' 見出し」直前までを new_block に置換（summary/structure/reuse）
-    start = None
-    for i, line in enumerate(lines):
-        if line.strip() == header:
-            start = i + 1
-            break
-    if start is None:
-        return False
-
-    # 終端を探す（次のセクションヘッダ）
-    end = len(lines)
-    for j in range(start, len(lines)):
-        if lines[j].startswith("## "):
-            end = j
-            break
-
-    block = (new_block.rstrip() + "\n") if new_block else ""
-    new_lines = lines[:start] + [block] + lines[end:]
-    # 改行を整える：ブロック直後に改行1つは維持
-    if start < len(new_lines) and not new_lines[start].endswith("\n"):
-        new_lines[start] = new_lines[start] + "\n"
-    lines[:] = new_lines
-    return True
-
-def update_markdown(file_path, field, new_value):
-    lines = read_lines(file_path)
-    changed = False
-
-    if field == "title":
-        changed = replace_title(lines, new_value)
-    elif field in ("project", "tags", "tldr", "achievement", "trigger"):
-        header = HEADERS[field]
-        changed = replace_section_single_line(lines, header, new_value)
-    elif field in ("summary", "structure", "reuse"):
-        header = HEADERS[field]
-        changed = replace_section_block(lines, header, new_value)
+if field == "title":
+    # 1行目タイトルを差し替え＋ファイル名も変更
+    title_line = lines[0] if lines else ""
+    new_title = value
+    new_line = f"# {new_title} ({date_str})\n"
+    if lines:
+        lines[0] = new_line
     else:
-        raise ValueError("不明なフィールドです")
-
-    if changed:
-        write_lines(file_path, lines)
-    return changed
-
-def main():
-    if len(sys.argv) < 4:
-        print("使い方: python3 update_snapshot.py <日付:YYYY-MM-DD> <フィールド名> <新しい値>")
-        print("フィールド名: title / project / tags / tldr / achievement / trigger / summary / structure / reuse")
+        lines = [new_line, "\n"]
+    # ファイル名変更
+    old_name = os.path.basename(md_target)
+    safe_title = new_title.replace(" ","_").replace("/","-")
+    new_name = f"{date_str}_{safe_title}.md"
+    new_path = os.path.join(SAVE_DIR, new_name)
+    with open(new_path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+    os.remove(md_target)
+    md_target = new_path
+    print(f"✅ タイトル更新＆リネーム: {old_name} → {new_name}")
+else:
+    header = mapping.get(field)
+    if not header:
+        print("❌ 不明なfield: ", field)
         sys.exit(1)
-
-    date_str, field = sys.argv[1], sys.argv[2]
-    new_value = " ".join(sys.argv[3:])  # スペース含む値もOK
-
-    if not os.path.isdir(SAVE_DIR):
-        print("❌ スナップショット保存ディレクトリがありません")
+    if header == "#":
+        print("❌ タイトル更新は field=title を使用してください")
         sys.exit(1)
+    lines = replace_block(lines, header, value)
+    with open(md_target, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+    print(f"✅ Markdown更新: {os.path.basename(md_target)} [{field}]")
 
-    index = load_index()
-    idx, entry = find_entry(index, date_str)
-    if entry is None:
-        print(f"❌ インデックスで日付 {date_str} のエントリが見つかりません")
-        sys.exit(1)
+# インデックス更新（title/filenameも反映）
+try:
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        index = json.load(f)
+except:
+    index = []
+filename = os.path.basename(md_target)
+# 旧レコード排除して追加
+index = [e for e in index if e.get("filename") != filename]
+# タイトル抽出
+with open(md_target, "r", encoding="utf-8") as f:
+    first = f.readline().strip()
+title = first.replace("# ","").split(" (")[0] if first.startswith("# ") else filename
+entry = next((e for e in index if e.get("filename")==filename), None)
+if entry: index.remove(entry)
+index.insert(0, {"date": date_str, "title": title, "filename": filename})
+with open(INDEX_FILE, "w", encoding="utf-8") as f:
+    json.dump(index, f, ensure_ascii=False, indent=2)
+print(f"✅ インデックス更新: {INDEX_FILE}")
 
-    # 対象MDファイルを特定
-    file_name = entry.get("file")
-    file_path = os.path.join(SAVE_DIR, file_name) if file_name else None
-    if not file_path or not os.path.exists(file_path):
-        # フォールバック：日付一致ファイルを検索
-        candidates = [f for f in os.listdir(SAVE_DIR) if f.startswith(date_str) and f.endswith(".md")]
-        if not candidates:
-            print(f"❌ MDファイルが見つかりません（{date_str}）")
-            sys.exit(1)
-        file_name = candidates[0]
-        file_path = os.path.join(SAVE_DIR, file_name)
-
-    # 1) Markdownの更新
-    try:
-        updated = update_markdown(file_path, field, new_value)
-        if not updated:
-            print(f"⚠ {field} を更新できませんでした（ヘッダが見つからない可能性）")
-        else:
-            print(f"✅ Markdown更新: {os.path.basename(file_path)} [{field}]")
-    except ValueError as e:
-        print(f"❌ {e}")
-        sys.exit(1)
-
-    # 2) index の更新（定義済みキーのみ）
-    if field in INDEX_FIELDS:
-        entry[field] = new_value
-        # タイトル変更時はファイル名もリネームして整合性を保つ
-        if field == "title":
-            safe = sanitize_filename(new_value)
-            new_file = f"{date_str}_{safe}.md"
-            new_path = os.path.join(SAVE_DIR, new_file)
-            os.rename(file_path, new_path)
-            entry["file"] = new_file
-            print(f"✅ ファイル名リネーム: {os.path.basename(file_path)} → {new_file}")
-        save_index(index)
-        print(f"✅ インデックス更新: {INDEX_FILE}")
-
-if __name__ == "__main__":
-    main()
+# Git自動push
+autopush(f"docs(snapshot): {filename} {field} updated")
