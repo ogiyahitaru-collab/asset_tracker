@@ -1,0 +1,12 @@
+FROM python:3.11-slim
+
+# 文字化け防止
+ENV LANG=C.UTF-8
+
+# 必要最小限のライブラリ
+RUN pip install --no-cache-dir requests beautifulsoup4
+
+WORKDIR /app
+COPY scrape_reuters_requests.py /app/
+
+CMD ["python", "scrape_reuters_requests.py"]

@@ -1,0 +1,42 @@
+{
+  "os_frameworks": [
+    {
+      "name": "Rev∞OS",
+      "value": 2000000,
+      "category": "戦略OS",
+      "notes": "自己成長と意思決定支援の中核"
+    },
+    {
+      "name": "CapsuleGPT",
+      "value": 1500000,
+      "category": "AI構造",
+      "notes": "擬似エージェント構造の開発"
+    }
+  ],
+  "project_assets": [
+    {
+      "name": "NAS自動化スクリプト群",
+      "value": 500000,
+      "category": "自動化ツール",
+      "notes": "資産計算・ニュース収集・Notion連携"
+    },
+    {
+      "name": "永久保存メモリ 50件",
+      "value": 3000000,
+      "category": "知識資産",
+      "notes": "長期活用可能なナレッジベース"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Python開発",
+      "value": 800000,
+      "category": "スキル"
+    },
+    {
+      "name": "英語ビジネス会話",
+      "value": 600000,
+      "category": "スキル"
+    }
+  ]
+}

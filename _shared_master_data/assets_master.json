@@ -1,0 +1,16 @@
+{
+  "stocks": {
+    "5406.T": {"name": "神戸製鋼所", "quantity": 1000, "account": "SBI証券"},
+    "7203.T": {"name": "トヨタ自動車", "quantity": 50, "account": "楽天証券"}
+  },
+  "funds": {
+    "eMAXIS Slim 米国株式": {"amount": 2000000, "account": "SBI証券"},
+    "ニッセイ外国株式": {"amount": 1500000, "account": "楽天証券"}
+  },
+  "bonds": {
+    "国債10年": {"amount": 1000000, "account": "野村證券"}
+  },
+  "cash": {
+    "普通預金": {"amount": 3000000, "bank": "三菱UFJ銀行"}
+  }
+}

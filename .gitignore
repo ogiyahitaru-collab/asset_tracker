@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.log
+*.md~
+*.tmp
+*.bak
+*.swp
+.venv/
+.env
+logs/
+*.sqlite3

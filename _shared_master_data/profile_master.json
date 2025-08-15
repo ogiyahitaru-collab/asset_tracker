@@ -1,0 +1,35 @@
+{
+  "personal": {
+    "name": "高橋宏成",
+    "birth_year": 1994,
+    "location": "兵庫県明石市",
+    "marital_status": "既婚",
+    "children": 1
+  },
+  "career": {
+    "company": "神戸製鋼所",
+    "department": "機械事業部 樹脂機械チーム",
+    "position": "総合職",
+    "years_of_service": 5,
+    "annual_income": 6000000
+  },
+  "goals": {
+    "overseas_assignment": true,
+    "target_toeic": 850,
+    "target_assets": 100000000,
+    "target_year": 2036,
+    "milestones": [
+      {"year": 2030, "event": "子ども進学", "cost": 3000000},
+      {"year": 2036, "event": "住宅購入", "cost": 40000000}
+    ]
+  },
+  "preferences": {
+    "hobbies": ["ランニング", "写真", "読書", "旅行"],
+    "investment_style": "長期・配当重視",
+    "languages": ["日本語", "英語"]
+  },
+  "assets_summary": {
+    "real_estate": [],
+    "vehicles": ["マイカー1台"]
+  }
+}

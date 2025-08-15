@@ -1,0 +1,30 @@
+{
+  "notion": {
+    "database_name": "経済ニュースDB",
+    "columns": [
+      "date",
+      "title",
+      "summary_ja",
+      "url",
+      "source"
+    ]
+  },
+  "sources": [
+    {
+      "name": "Google News JP",
+      "rss": "https://news.google.com/rss/search?q=経済+when:1d&hl=ja&gl=JP&ceid=JP:ja",
+      "lang": "ja"
+    },
+    {
+      "name": "Reuters Business",
+      "rss": "https://feeds.reuters.com/reuters/businessNews",
+      "lang": "en"
+    }
+  ],
+  "schedule": [
+    "07:00",
+    "12:00"
+  ],
+  "translation": "en_to_ja",
+  "max_articles_per_source": 5
+}

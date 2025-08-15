@@ -1,0 +1,16 @@
+{
+  "target_year": 2036,
+  "target_amount": 100000000,
+  "milestones": [
+    {"year": 2030, "event": "子ども進学", "cost": 3000000},
+    {"year": 2036, "event": "住宅購入", "cost": 40000000}
+  ],
+  "expected_return": 0.04,
+  "current_assets": {
+    "cash": 3000000,
+    "stocks": {
+      "5406.T": 1000,
+      "7203.T": 50
+    }
+  }
+}
