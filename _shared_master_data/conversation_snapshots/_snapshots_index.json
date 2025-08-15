@@ -1,6 +1,14 @@
 [
   {
     "date": "2025-08-15",
+    "title": "秘密情報流出防止ルール導入",
+    "project": "セキュリティ運用",
+    "tags": "#セキュリティ,#GitHub,#ルール",
+    "tldr": "detect-secrets＋pre-pushで秘密検知を自動化",
+    "filename": "2025-08-15_秘密情報流出防止ルール導入.md"
+  },
+  {
+    "date": "2025-08-15",
     "title": "GitHub履歴クリーンアップ",
     "project": "Git履歴から.env.exampleを完全削除し、安全なテンプレ再配置。履歴書き換え後、リモートへ強制push。SSH接続確認・リモートURL修正・認証確認も実施。",
     "tags": "#GitHub,#履歴削除,#セキュリティ",
