@@ -21,3 +21,4 @@ __pycache__/
 *.tmp
 *.bak
 *.swp
+asset_tracker/.secrets.baseline
